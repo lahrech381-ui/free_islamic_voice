@@ -1,0 +1,1598 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>محرك بحث للصوتيات الإسلامية</title>
+
+    <!-- Bootstrap RTL -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            padding-top: 72px;
+            padding-bottom: 120px;
+            background: #f6f7f9;
+            font-family: 'cairo', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .app-header {
+            box-shadow: 0 2px 10px rgba(3, 134, 9, 0.08);
+        }
+
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .result-meta {
+            color: #6c757d;
+            font-size: .92rem;
+        }
+
+        .truncate-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .player-bar {
+            background: #eef3ee;
+            border-top: 1px solid rgba(0, 0, 0, .1);
+        }
+
+        .player-title {
+            font-weight: 600;
+        }
+
+        .player-sub {
+            color: #6c757d;
+            font-size: .9rem;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge-soft {
+            background: #eef2ff;
+            color: #334155;
+            border: 1px solid #e5e7eb;
+        }
+
+        .list-editor-item {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .dropdown-menu {
+            max-height: 240px;
+            overflow: auto;
+        }
+
+        .tiny {
+            font-size: .85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header (fixed) -->
+    <nav class="navbar navbar-dark bg-success fixed-top app-header">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img class="brand-logo bg-white rounded p-1" src="logo.png" alt="logo">
+                <span>محرك بحث الدروس الصوتية</span>
+                
+            </a>
+<div class="d-flex gap-2">
+  <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#favoritesModal">
+    <i class="fa-solid fa-heart ms-1"></i> المفضلة
+  </button>
+
+  <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#helpModal">
+    <i class="fa-solid fa-circle-question ms-1"></i> دليل الاستخدام
+  </button>
+</div>
+            
+        </div>
+    </nav>
+<div style="text-align: center; margin: 10px;color: #037a17;">فكرة و ننفيد لحرش حسن بمساعدة <strong style="color: blue;">:gpt-5.2 hight </strong> </div>
+    <main class="container">
+        <!-- Search -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">البحث</h5>
+                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#listsModal">
+                        <i class="fa-solid fa-gear ms-1"></i> إدارة القوائم
+                    </button>
+                </div>
+
+                <form id="searchForm" class="row g-2 align-items-end">
+                    <!-- Semantic input with autocomplete -->
+                    <div class="col-12">
+                        <label class="form-label">بحث ذكي (الشيخ أو عنوان الدرس)</label>
+                        <div class="dropdown w-100">
+                            <input id="semanticInput" class="form-control" autocomplete="off"
+                                placeholder='مثال: صالح الفوزان'>
+                            <div id="semanticMenu" class="dropdown-menu w-100"></div>
+                        </div>
+                        <div class="form-text">
+                            مطابقة ذكية: حذف التشكيل، توحيد الألف/الياء، ومع/بدون "الـ"، ثم بحث في Creator و Title.
+                        </div>
+                    </div>
+
+                    <!-- Creator -->
+                    <div class="col-12 col-md-4">
+                        <label class="form-label d-flex justify-content-between align-items-center">
+                            <span>الشيخ (Creator)</span>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="creatorSortBtn"
+                                title="ترتيب القائمة">
+                                <i class="fa-solid fa-arrow-up-a-z"></i>
+                            </button>
+                        </label>
+                        <select id="creatorSelect" class="form-select">
+                            <option value="">الكل</option>
+                        </select>
+                        <div class="form-text tiny" id="creatorSortHint">ترتيب: —</div>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="col-12 col-md-4">
+                        <label class="form-label d-flex justify-content-between align-items-center">
+                            <span>المادة (Subject)</span>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="subjectSortBtn"
+                                title="ترتيب القائمة">
+                                <i class="fa-solid fa-arrow-up-a-z"></i>
+                            </button>
+                        </label>
+                        <select id="subjectSelect" class="form-select">
+                            <option value="">الكل</option>
+                        </select>
+                        <div class="form-text tiny" id="subjectSortHint">ترتيب: —</div>
+                    </div>
+
+                    <!-- Sort results + Favorites-only -->
+                    <div class="col-12 col-md-2">
+                        <label class="form-label">ترتيب النتائج</label>
+                        <select id="resultsSort" class="form-select">
+                            <option value="downloads_desc">الأكثر تحميلاً</option>
+                            <option value="date_desc">الأحدث</option>
+                            <option value="title_asc">العنوان (أ-ي)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-2">
+                        <div class="form-check mt-4">
+                            <input class="form-check-input" type="checkbox" id="favoritesOnly">
+                            <label class="form-check-label" for="favoritesOnly">المفضلة فقط</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 d-grid d-md-block">
+                        <button class="btn btn-primary" id="searchBtn" type="submit">
+                            <i class="fa-solid fa-magnifying-glass ms-1"></i> بحث
+                        </button>
+                    </div>
+
+                    <!-- Loading bar -->
+                    <div class="col-12">
+                        <div class="progress d-none" id="loadingBar" style="height: 8px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-text">
+                            يتم تجاهل النتائج التي لا تحتوي على إسم الشيخ (فارغ).
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">النتائج</h5>
+                    <div class="small text-muted" id="statsText">—</div>
+                </div>
+
+                <div id="resultsList" class="list-group mb-3"></div>
+
+                <nav>
+                    <ul class="pagination justify-content-center mb-0" id="pagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </main>
+
+    <!-- Playlist Modal -->
+    <div class="modal fade" id="playlistModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">قائمة التشغيل</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <div class="fw-semibold" id="plItemTitle">—</div>
+                        <div class="text-muted small" id="plItemCreator">—</div>
+                    </div>
+                    <div class="list-group" id="playlistFiles"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Favorites Modal -->
+    <div class="modal fade" id="favoritesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">المفضلة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="text-muted small" id="favCountText">—</div>
+                        <button class="btn btn-outline-danger btn-sm" id="clearFavsBtn">
+                            <i class="fa-solid fa-trash ms-1"></i> حذف الكل
+                        </button>
+                    </div>
+                    <div class="list-group" id="favoritesList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lists Management Modal -->
+    <div class="modal fade" id="listsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">إدارة القوائم (إضافة / تعديل / حذف)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabCreators"
+                                type="button" role="tab">
+                                الشيوخ 
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSubjects" type="button"
+                                role="tab">
+                                التصنيف 
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content pt-3">
+                        <div class="tab-pane fade show active" id="tabCreators" role="tabpanel">
+                            <div class="input-group mb-2">
+                                <input id="newCreatorInput" class="form-control" placeholder="إضافة شيخ جديد...">
+                                <button class="btn btn-primary" id="addCreatorBtn">إضافة</button>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="text-muted small">ملاحظة: ترتيب العرض يتحكم به زر الترتيب بجانب القائمة.
+                                </div>
+                            </div>
+                            <div id="creatorsEditor" class="vstack gap-2"></div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tabSubjects" role="tabpanel">
+                            <div class="input-group mb-2">
+                                <input id="newSubjectInput" class="form-control" placeholder="إضافة مادة جديدة...">
+                                <button class="btn btn-primary" id="addSubjectBtn">إضافة</button>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="text-muted small">ملاحظة: ترتيب العرض يتحكم به زر الترتيب بجانب القائمة.
+                                </div>
+                            </div>
+                            <div id="subjectsEditor" class="vstack gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- Help / Manual Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">دليل الاستخدام — محرك بحث الدروس الصوتية</h5>
+        
+    <i class="fa-solid fa-circle-question ms-1"></i> دليل الاستخدام
+</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-info">
+            <h5> "فكرة و ننفيد لحرش حسن بمساعدة gpt-5.2 hight </h5>
+          <div class="fw-semibold mb-1">ماذا يفعل هذا المحرك؟</div>
+          يبحث داخل <strong>Archive.org</strong> عن العناصر الصوتية (Audio) ويعرض النتائج مع تشغيل مباشر وقائمة تشغيل ومفضلة.
+          <div class="small text-muted mt-1">
+            ملاحظة: جودة النتائج تعتمد على بيانات الأرشيف (Title/Creator/Subject).
+          </div>
+        </div>
+
+        <div class="accordion" id="helpAcc">
+
+          <!-- 1 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h1">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#c1">
+                1) البحث الذكي (شبه دلالي) — الشيخ أو عنوان الدرس
+              </button>
+            </h2>
+            <div id="c1" class="accordion-collapse collapse show" data-bs-parent="#helpAcc">
+              <div class="accordion-body">
+                <p class="mb-2">
+                  في خانة <strong>بحث ذكي</strong> اكتب اسمًا أو جزءًا منه، مثل:
+                  <code>صالح الفوزان</code>
+                  وسيحاول النظام مطابقة صيغ متعددة مثل:
+                  <em>الشيخ صالح بن فوزان الفوزان</em>، <em>الفوزان</em>، <em>صالح بن فوزان</em>...
+                </p>
+
+                <ul class="mb-2">
+                  <li>يتم <strong>تطبيع النص</strong> لتحسين النتائج: إزالة التشكيل والتطويل، وتوحيد (أ/إ/آ → ا) و(ى → ي).</li>
+                  <li>المطابقة تتم على حقلي <strong>Creator</strong> و <strong>Title</strong>.</li>
+                  <li>تظهر <strong>اقتراحات</strong> أثناء الكتابة (Autocomplete). اختر اقتراحًا لتعبئة الحقل بسرعة.</li>
+                </ul>
+
+                <div class="alert alert-warning mb-0">
+                  إذا كانت كلمات البحث كثيرة جدًا، قد تصبح الاستعلامات أبطأ لأن البحث يعتمد على wildcards.
+                  يُنصح بكلمتين أو ثلاث.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c2">
+                2) التصفية بالقوائم (الشيخ / المادة) + ترتيب القوائم
+              </button>
+            </h2>
+            <div id="c2" class="accordion-collapse collapse" data-bs-parent="#helpAcc">
+              <div class="accordion-body">
+                <ul class="mb-2">
+                  <li>قائمة <strong>الشيخ</strong>: لتصفية النتائج حسب Creator.</li>
+                  <li>قائمة <strong>المادة</strong>: لتصفية النتائج حسب Subject.</li>
+                  <li>اترك القوائم على <strong>الكل</strong> لبحث عام.</li>
+                </ul>
+
+                <p class="mb-2">
+                  يمكنك <strong>ترتيب عناصر القوائم</strong> (أ-ي / ي-أ) عبر زر الترتيب بجانب كل قائمة.
+                  هذا يؤثر فقط على عرض القائمة في واجهتك (ويُحفظ في المتصفح).
+                </p>
+
+                <div class="alert alert-secondary mb-0">
+                  إدارة القوائم (إضافة/تعديل/حذف) تتم من زر <strong>إدارة القوائم</strong>.
+                  يتم الحفظ محليًا عبر <strong>localStorage</strong>.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h3">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c3">
+                3) ترتيب النتائج + عدد النتائج + شريط التقدم
+              </button>
+            </h2>
+            <div id="c3" class="accordion-collapse collapse" data-bs-parent="#helpAcc">
+              <div class="accordion-body">
+                <ul class="mb-2">
+                  <li><strong>ترتيب النتائج</strong>: الأكثر تحميلاً / الأحدث / العنوان.</li>
+                  <li>يظهر أعلى النتائج: <strong>عدد نتائج الخادم</strong> + <strong>المعروض بعد التصفية</strong> + <strong>المهمل بدون Creator</strong>.</li>
+                  <li>عند البحث يظهر <strong>شريط تحميل</strong> (progress) حتى تنتهي العملية.</li>
+                </ul>
+                <div class="alert alert-info mb-0">
+                  يتم تجاهل العناصر التي لا تحتوي على Creator (فارغ/Null) حسب إعدادات التطبيق.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h4">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c4">
+                4) عرض النتائج + الصفحات (Pagination)
+              </button>
+            </h2>
+            <div id="c4" class="accordion-collapse collapse" data-bs-parent="#helpAcc">
+              <div class="accordion-body">
+                <ul class="mb-2">
+                  <li>كل نتيجة تعرض: <strong>الدرس (Title)</strong>، <strong>الشيخ (Creator)</strong>، <strong>المادة (Subject)</strong>.</li>
+                  <li>تستطيع التنقل عبر أزرار <strong>السابق/التالي</strong> أو أرقام الصفحات.</li>
+                  <li>المشغل أسفل الصفحة ثابت، وتم ضبط مساحة أسفل الصفحة تلقائيًا حتى لا تغطي الـ Pagination.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h5">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c5">
+                5) التشغيل وقائمة التشغيل (Playlist)
+              </button>
+            </h2>
+            <div id="c5" class="accordion-collapse collapse" data-bs-parent="#helpAcc">
+              <div class="accordion-body">
+                <ul class="mb-2">
+                  <li>زر <strong>تشغيل</strong> في النتيجة: يشغل أول ملف صوتي (MP3/OGG) متاح داخل العنصر.</li>
+                  <li>زر <strong>القائمة</strong>: يفتح نافذة فيها كل الملفات الصوتية المتاحة (Playlist).</li>
+                  <li>من داخل القائمة يمكنك: تشغيل ملف محدد أو تحميله أو إضافته للمفضلة.</li>
+                </ul>
+
+                <div class="alert alert-warning mb-0">
+                  بعض عناصر Archive.org قد لا تحتوي ملفات MP3/OGG، أو قد تكون صيغ غير مدعومة من المتصفح.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h6">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c6">
+                6) المشغل السفلي: تقدم التشغيل + مشاركة + تحميل + مفضلة
+              </button>
+            </h2>
+            <div id="c6" class="accordion-collapse collapse" data-bs-parent="#helpAcc">
+              <div class="accordion-body">
+                <ul class="mb-2">
+                  <li><strong>شريط تقدم</strong>: يعرض تقدم المقطع (مع الوقت الحالي/المدة).</li>
+                  <li><strong>مشاركة</strong>: إن كان المتصفح يدعم Web Share سيستخدمه، وإلا ينسخ الرابط.</li>
+                  <li><strong>تحميل</strong>: زر تحميل يفتح رابط الملف الصوتي مباشرة.</li>
+                  <li><strong>مفضلة</strong>: زر القلب يضيف/يحذف المقطع من المفضلة.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h7">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c7">
+                7) المفضلة (Favorites) + خيار "المفضلة فقط"
+              </button>
+            </h2>
+            <div id="c7" class="accordion-collapse collapse" data-bs-parent="#helpAcc">
+              <div class="accordion-body">
+                <ul class="mb-2">
+                  <li>زر <strong>المفضلة</strong> أعلى الصفحة يعرض نافذة بكل المقاطع المفضلة.</li>
+                  <li>يمكن تشغيل المقطع من المفضلة أو حذفه.</li>
+                  <li>تفعيل <strong>المفضلة فقط</strong> يجعل النتائج تعرض العناصر التي سبق وأضفت منها مقاطع للمفضلة.</li>
+                </ul>
+                <div class="alert alert-secondary mb-0">
+                  المفضلة تُحفظ محليًا في المتصفح (localStorage).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="h8">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#c8">
+                8) مشاكل شائعة وحلول سريعة
+              </button>
+            </h2>
+            <div id="c8" class="accordion-collapse collapse" data-bs-parent="#helpAcc">
+              <div class="accordion-body">
+                <ul class="mb-2">
+                  <li><strong>لا توجد نتائج:</strong> جرّب تقليل كلمات البحث أو إزالة فلتر الشيخ/المادة.</li>
+                  <li><strong>النتيجة موجودة على الموقع وليس هنا:</strong> قد تكون بيانات Creator/Title مختلفة؛ جرّب البحث بكلمة واحدة.</li>
+                  <li><strong>لا يعمل التشغيل:</strong> ربما الملف بصيغة غير مدعومة أو رابط بطيء؛ جرّب ملفًا آخر من Playlist.</li>
+                  <li><strong>بطء البحث:</strong> البحث الذكي يستخدم wildcards؛ اجعل الكلمات أقل (2-3).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /accordion -->
+
+        <div class="mt-3 small text-muted">
+          يعتمد التطبيق على:
+          <a href="https://archive.org/advancedsearch.php" target="_blank" rel="noopener">Advanced Search API</a>
+          و
+          <a href="https://archive.org/metadata/" target="_blank" rel="noopener">Metadata API</a>.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+    <!-- Fixed Audio Player -->
+    <footer class="fixed-bottom player-bar" id="playerBar">
+        <div class="container py-2">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-6">
+                    <div class="player-title truncate-2" id="nowTitle">لا يوجد تشغيل</div>
+                    <div class="player-sub truncate-2" id="nowMeta">—</div>
+
+                    <!-- Track progress -->
+                    <div class="mt-2">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" id="trackProgress" style="width:0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted tiny mt-1">
+                            <span id="timeNow">00:00</span>
+                            <span id="timeDur">00:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="d-flex gap-2 justify-content-md-end align-items-center">
+                        <button class="btn btn-outline-primary icon-btn" id="btnPlayPause" title="تشغيل/إيقاف">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+
+                        <button class="btn btn-outline-secondary icon-btn" id="btnShare" title="مشاركة">
+                            <i class="fa-solid fa-share-nodes"></i>
+                        </button>
+
+                        <a class="btn btn-outline-secondary icon-btn disabled" id="btnDownload" title="تحميل" href="#"
+                            target="_blank" rel="noopener">
+                            <i class="fa-solid fa-download"></i>
+                        </a>
+
+                        <button class="btn btn-outline-secondary icon-btn" id="btnFav" title="إضافة للمفضلة">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <!-- keep native controls -->
+                    <audio id="audio" preload="none" class="w-100" controls></audio>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ----------------------------
+        // Local Storage keys
+        // ----------------------------
+        const LS_CREATORS = "ar_archive_creators";
+        const LS_SUBJECTS = "ar_archive_subjects";
+        const LS_FAVS = "ar_archive_favs";
+        const LS_CREATOR_SORT = "ar_creator_sort"; // asc | desc
+        const LS_SUBJECT_SORT = "ar_subject_sort"; // asc | desc
+
+        // Defaults (عدلها كما تريد)
+        const defaultCreators = [
+            "الشيخ صالح بن فوزان الفوزان",
+            "الفوزان",
+            "الشيخ ابن باز",
+            "الشيخ ابن عثيمين",
+            "الشيخ الألباني"
+        ];
+
+        const defaultSubjects = [
+            "العقيدة",
+            "الفقه",
+            "الحديث",
+            "التفسير"
+        ];
+
+        // Pagination / search state
+        const state = {
+            page: 1,
+            rows: 10,
+            numFound: 0,
+            lastQuery: null,
+            current: null,
+            lastDocs: [] // for autocomplete titles
+        };
+
+        // Elements
+        const creatorSelect = document.getElementById("creatorSelect");
+        const subjectSelect = document.getElementById("subjectSelect");
+        const semanticInput = document.getElementById("semanticInput");
+        const semanticMenu = document.getElementById("semanticMenu");
+        const resultsList = document.getElementById("resultsList");
+        const pagination = document.getElementById("pagination");
+        const statsText = document.getElementById("statsText");
+        const searchBtn = document.getElementById("searchBtn");
+        const loadingBar = document.getElementById("loadingBar");
+        const resultsSort = document.getElementById("resultsSort");
+        const favoritesOnly = document.getElementById("favoritesOnly");
+
+        const creatorSortBtn = document.getElementById("creatorSortBtn");
+        const subjectSortBtn = document.getElementById("subjectSortBtn");
+        const creatorSortHint = document.getElementById("creatorSortHint");
+        const subjectSortHint = document.getElementById("subjectSortHint");
+
+        const audio = document.getElementById("audio");
+        const btnPlayPause = document.getElementById("btnPlayPause");
+        const btnShare = document.getElementById("btnShare");
+        const btnDownload = document.getElementById("btnDownload");
+        const btnFav = document.getElementById("btnFav");
+        const nowTitle = document.getElementById("nowTitle");
+        const nowMeta = document.getElementById("nowMeta");
+
+        const trackProgress = document.getElementById("trackProgress");
+        const timeNow = document.getElementById("timeNow");
+        const timeDur = document.getElementById("timeDur");
+
+        const plItemTitle = document.getElementById("plItemTitle");
+        const plItemCreator = document.getElementById("plItemCreator");
+        const playlistFiles = document.getElementById("playlistFiles");
+
+        const favoritesList = document.getElementById("favoritesList");
+        const favCountText = document.getElementById("favCountText");
+        const clearFavsBtn = document.getElementById("clearFavsBtn");
+
+        // ----------------------------
+        // Layout: adjust body padding-bottom to player height (for pagination visibility)
+        // ----------------------------
+        function adjustBodyPaddingForPlayer() {
+            const bar = document.getElementById("playerBar");
+            const h = bar ? bar.offsetHeight : 110;
+            document.body.style.paddingBottom = (h + 16) + "px";
+        }
+        window.addEventListener("resize", adjustBodyPaddingForPlayer);
+
+        // ----------------------------
+        // Helpers
+        // ----------------------------
+        function loadList(key, fallback) {
+            const raw = localStorage.getItem(key);
+            if (!raw) return [...fallback];
+            try {
+                const arr = JSON.parse(raw);
+                if (!Array.isArray(arr)) return [...fallback];
+                return arr.filter(x => typeof x === "string").map(x => x.trim()).filter(Boolean);
+            } catch {
+                return [...fallback];
+            }
+        }
+
+        function saveList(key, list) {
+            const clean = list.map(x => String(x).trim()).filter(Boolean);
+            localStorage.setItem(key, JSON.stringify(clean));
+        }
+
+        function escapeHtml(s) {
+            return String(s)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function normalizeCreator(creator) {
+            if (Array.isArray(creator)) {
+                const c = creator.map(x => String(x || "").trim()).find(Boolean);
+                return c || "";
+            }
+            return String(creator || "").trim();
+        }
+
+        function normalizeSubject(subject) {
+            if (Array.isArray(subject)) {
+                const arr = subject.map(x => String(x || "").trim()).filter(Boolean);
+                return arr.slice(0, 3).join("، ");
+            }
+            return String(subject || "").trim();
+        }
+
+        // ----------------------------
+        // "Semantic-ish" Arabic normalization + matching
+        // ----------------------------
+        function arNormalize(s) {
+            s = String(s || "");
+            // إزالة التشكيل + التطويل
+            s = s.replace(/[\u064B-\u0652\u0670]/g, "").replace(/\u0640/g, "");
+            // توحيد الألف والهمزات
+            s = s.replace(/[أإآٱ]/g, "ا");
+            // توحيد الياء/الألف المقصورة
+            s = s.replace(/ى/g, "ي");
+            // إزالة الرموز
+            s = s.replace(/[^\p{L}\p{N}\s]/gu, " ");
+            s = s.replace(/\s+/g, " ").trim();
+            return s;
+        }
+
+        function tokenizeArabic(s) {
+            const stop = new Set(["الشيخ", "شيخ", "الاستاذ", "الأستاذ", "استاذ", "د", "د.", "بن", "ابن", "بنت", "ال"]);
+            const tokens = arNormalize(s)
+                .split(" ")
+                .map(w => w.trim())
+                .filter(w => w && !stop.has(w));
+            return tokens.slice(0, 6); // avoid very heavy wildcard queries
+        }
+
+        function tokenVariants(w) {
+            const v = new Set([w]);
+            if (w.startsWith("ال") && w.length > 2) v.add(w.slice(2));
+            if (!w.startsWith("ال")) v.add("ال" + w);
+            return [...v];
+        }
+
+        function buildFieldSemanticQuery(field, input) {
+            const tokens = tokenizeArabic(input);
+            if (!tokens.length) return "";
+            const parts = tokens.map(t => {
+                const vars = tokenVariants(t).map(v => `*${v}*`);
+                return `(${vars.join(" OR ")})`;
+            });
+            return `${field}:( ${parts.join(" AND ")} )`;
+        }
+
+        function semanticMatch(text, input) {
+            const qTokens = tokenizeArabic(input);
+            if (!qTokens.length) return true;
+            const tNorm = " " + arNormalize(text) + " ";
+            return qTokens.every(q => {
+                const qn = arNormalize(q);
+                const vars = tokenVariants(qn);
+                return vars.some(v => tNorm.includes(" " + v + " "));
+            });
+        }
+
+        // ----------------------------
+        // Dropdown list sorting
+        // ----------------------------
+        function getSortPref(key, def = "asc") {
+            const v = (localStorage.getItem(key) || def).toLowerCase();
+            return (v === "desc") ? "desc" : "asc";
+        }
+        function toggleSortPref(key) {
+            const cur = getSortPref(key);
+            localStorage.setItem(key, cur === "asc" ? "desc" : "asc");
+        }
+        function sortLabel(pref) {
+            return pref === "asc" ? "أ-ي" : "ي-أ";
+        }
+
+        function fillSelect(select, items, prefKey) {
+            const current = select.value;
+            const pref = getSortPref(prefKey);
+
+            const sorted = [...items].sort((a, b) => {
+                // Arabic-ish compare using locale
+                return pref === "asc"
+                    ? a.localeCompare(b, "ar")
+                    : b.localeCompare(a, "ar");
+            });
+
+            select.innerHTML = `<option value="">الكل</option>`;
+            for (const it of sorted) {
+                const opt = document.createElement("option");
+                opt.value = it;
+                opt.textContent = it;
+                select.appendChild(opt);
+            }
+
+            // restore if possible
+            const exists = Array.from(select.options).some(o => o.value === current);
+            if (exists) select.value = current;
+        }
+
+        function refreshSortHints() {
+            creatorSortHint.textContent = "ترتيب: " + sortLabel(getSortPref(LS_CREATOR_SORT));
+            subjectSortHint.textContent = "ترتيب: " + sortLabel(getSortPref(LS_SUBJECT_SORT));
+        }
+
+        creatorSortBtn.addEventListener("click", () => {
+            toggleSortPref(LS_CREATOR_SORT);
+            initLists(false);
+        });
+
+        subjectSortBtn.addEventListener("click", () => {
+            toggleSortPref(LS_SUBJECT_SORT);
+            initLists(false);
+        });
+
+        // ----------------------------
+        // Query building (Archive Advanced Search)
+        // ----------------------------
+        function mapResultsSortToSolr(sortKey) {
+            switch (sortKey) {
+                case "date_desc": return ["date desc"];
+                case "title_asc": return ["titleSorter asc", "title asc"];
+                case "downloads_desc":
+                default: return ["downloads desc"];
+            }
+        }
+
+        function buildQuery() {
+            const creator = creatorSelect.value.trim();
+            const subject = subjectSelect.value.trim();
+            const semantic = semanticInput.value.trim();
+
+            const parts = [
+                "mediatype:audio",
+                "creator:(*)" // try to ensure field exists on server side too
+            ];
+
+            if (creator) parts.push(`creator:"${creator.replaceAll('"', '\\"')}"`);
+            if (subject) parts.push(`subject:"${subject.replaceAll('"', '\\"')}"`);
+
+            if (semantic) {
+                const cq = buildFieldSemanticQuery("creator", semantic);
+                const tq = buildFieldSemanticQuery("title", semantic);
+                parts.push(`(${cq} OR ${tq})`);
+            }
+
+            return parts.join(" AND ");
+        }
+
+        function setStats(totalFound, shownCount, ignoredNoCreator) {
+            // totalFound: server numFound, shownCount: after client filtering
+            const start = (state.page - 1) * state.rows + 1;
+            const end = Math.min(state.page * state.rows, totalFound);
+
+            if (!totalFound) {
+                statsText.textContent = "لا توجد نتائج";
+                return;
+            }
+
+            const extra = [];
+            if (ignoredNoCreator > 0) extra.push(`تم تجاهل ${ignoredNoCreator} بدون Creator`);
+            if (shownCount !== null) extra.push(`المعروض بعد التصفية: ${shownCount}`);
+
+            statsText.textContent =
+                `نتائج الخادم: ${totalFound} · صفحة ${state.page} (عرض ${start} - ${end})` +
+                (extra.length ? ` · ${extra.join(" · ")}` : "");
+        }
+
+        function renderPagination() {
+            pagination.innerHTML = "";
+            const totalPages = Math.ceil(state.numFound / state.rows) || 1;
+
+            const makeItem = (label, page, disabled = false, active = false) => {
+                const li = document.createElement("li");
+                li.className = `page-item ${disabled ? "disabled" : ""} ${active ? "active" : ""}`.trim();
+                const a = document.createElement("a");
+                a.className = "page-link";
+                a.href = "#";
+                a.textContent = label;
+                a.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    if (disabled || active) return;
+                    state.page = page;
+                    runSearch();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                });
+                li.appendChild(a);
+                return li;
+            };
+
+            pagination.appendChild(makeItem("السابق", Math.max(1, state.page - 1), state.page === 1));
+
+            const win = 2;
+            const start = Math.max(1, state.page - win);
+            const end = Math.min(totalPages, state.page + win);
+
+            if (start > 1) {
+                pagination.appendChild(makeItem("1", 1, false, state.page === 1));
+                if (start > 2) {
+                    const ell = document.createElement("li");
+                    ell.className = "page-item disabled";
+                    ell.innerHTML = `<span class="page-link">…</span>`;
+                    pagination.appendChild(ell);
+                }
+            }
+
+            for (let p = start; p <= end; p++) {
+                pagination.appendChild(makeItem(String(p), p, false, p === state.page));
+            }
+
+            if (end < totalPages) {
+                if (end < totalPages - 1) {
+                    const ell = document.createElement("li");
+                    ell.className = "page-item disabled";
+                    ell.innerHTML = `<span class="page-link">…</span>`;
+                    pagination.appendChild(ell);
+                }
+                pagination.appendChild(makeItem(String(totalPages), totalPages, false, state.page === totalPages));
+            }
+
+            pagination.appendChild(makeItem("التالي", Math.min(totalPages, state.page + 1), state.page === totalPages));
+        }
+
+        // ----------------------------
+        // Archive.org API
+        // ----------------------------
+        async function advancedSearch(q, page, rows, sortArr) {
+            const url = new URL("https://archive.org/advancedsearch.php");
+            url.searchParams.set("q", q);
+            url.searchParams.set("output", "json");
+            url.searchParams.set("page", String(page));
+            url.searchParams.set("rows", String(rows));
+            url.searchParams.append("fl[]", "identifier");
+            url.searchParams.append("fl[]", "title");
+            url.searchParams.append("fl[]", "creator");
+            url.searchParams.append("fl[]", "subject");
+            url.searchParams.append("fl[]", "date");
+
+            (sortArr || ["downloads desc"]).forEach(s => url.searchParams.append("sort[]", s));
+
+            const res = await fetch(url.toString());
+            if (!res.ok) throw new Error("Advanced search error");
+            return await res.json();
+        }
+
+        async function fetchMetadata(identifier) {
+            const res = await fetch(`https://archive.org/metadata/${encodeURIComponent(identifier)}`);
+            if (!res.ok) throw new Error("Metadata error");
+            return await res.json();
+        }
+
+        function pickAudioFiles(meta) {
+            const files = Array.isArray(meta.files) ? meta.files : [];
+            const server = meta.server;
+            const dir = meta.dir;
+
+            const playable = files
+                .filter(f => f && f.name && (
+                    String(f.format || "").toLowerCase().includes("mp3") ||
+                    String(f.name).toLowerCase().endsWith(".mp3") ||
+                    String(f.format || "").toLowerCase().includes("ogg") ||
+                    String(f.name).toLowerCase().endsWith(".ogg")
+                ))
+                .filter(f => !String(f.name).startsWith("__MACOSX"))
+                .map(f => {
+                    const name = f.name;
+                    const title = f.title || name;
+                    const url = `https://${server}${dir}/${encodeURIComponent(name)}`;
+                    return { name, title, url, format: f.format || "" };
+                });
+
+            return playable;
+        }
+
+        // ----------------------------
+        // Favorites
+        // ----------------------------
+        function getFavs() {
+            try {
+                const arr = JSON.parse(localStorage.getItem(LS_FAVS) || "[]");
+                return Array.isArray(arr) ? arr : [];
+            } catch { return []; }
+        }
+        function setFavs(arr) { localStorage.setItem(LS_FAVS, JSON.stringify(arr)); }
+        function isFav(track) { return !!track?.url && getFavs().some(x => x.url === track.url); }
+
+        function updateFavBtn() {
+            const fav = isFav(state.current);
+            btnFav.innerHTML = fav ? `<i class="fa-solid fa-heart"></i>` : `<i class="fa-regular fa-heart"></i>`;
+            btnFav.classList.toggle("btn-outline-danger", fav);
+            btnFav.classList.toggle("btn-outline-secondary", !fav);
+        }
+
+        function toggleFav(track) {
+            if (!track?.url) return;
+            const favs = getFavs();
+            const idx = favs.findIndex(x => x.url === track.url);
+            if (idx >= 0) favs.splice(idx, 1);
+            else favs.unshift({
+                url: track.url,
+                title: track.title,
+                creator: track.creator,
+                subject: track.subject,
+                identifier: track.identifier,
+                fileName: track.fileName
+            });
+            setFavs(favs);
+            renderFavorites();
+            updateFavBtn();
+        }
+
+        function renderFavorites() {
+            const favs = getFavs();
+            favCountText.textContent = `عدد العناصر: ${favs.length}`;
+            favoritesList.innerHTML = "";
+
+            if (!favs.length) {
+                favoritesList.innerHTML = `<div class="text-muted">لا توجد عناصر في المفضلة.</div>`;
+                return;
+            }
+
+            favs.forEach(f => {
+                const row = document.createElement("div");
+                row.className = "list-group-item d-flex justify-content-between align-items-center gap-2";
+                row.innerHTML = `
+          <div class="flex-grow-1">
+            <div class="fw-semibold truncate-2">${escapeHtml(f.title || "—")}</div>
+            <div class="small text-muted truncate-2">${escapeHtml(f.creator || "—")} · ${escapeHtml(f.subject || "—")}</div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-success btn-sm"><i class="fa-solid fa-play ms-1"></i> تشغيل</button>
+            <button class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-trash ms-1"></i> حذف</button>
+          </div>
+        `;
+                const [btnPlay, btnDel] = row.querySelectorAll("button");
+                btnPlay.addEventListener("click", async () => {
+                    await playUrl(f);
+                });
+                btnDel.addEventListener("click", () => {
+                    toggleFav(f);
+                });
+                favoritesList.appendChild(row);
+            });
+        }
+
+        clearFavsBtn.addEventListener("click", () => {
+            if (!confirm("حذف كل المفضلة؟")) return;
+            setFavs([]);
+            renderFavorites();
+            updateFavBtn();
+        });
+
+        // ----------------------------
+        // Player / Share / Progress
+        // ----------------------------
+        function setCurrentTrack(track) {
+            state.current = track;
+
+            nowTitle.textContent = track?.title ? track.title : "لا يوجد تشغيل";
+            nowMeta.textContent = (track?.creator || track?.subject) ? `${track.creator || "—"} · ${track.subject || "—"}` : "—";
+
+            if (track?.url) {
+                btnDownload.classList.remove("disabled");
+                btnDownload.href = track.url;
+            } else {
+                btnDownload.classList.add("disabled");
+                btnDownload.href = "#";
+            }
+
+            // reset progress UI
+            trackProgress.style.width = "0%";
+            timeNow.textContent = "00:00";
+            timeDur.textContent = "00:00";
+
+            updateFavBtn();
+        }
+
+        async function playUrl(track) {
+            setCurrentTrack(track);
+            if (!track?.url) return;
+            audio.src = track.url;
+            try { await audio.play(); } catch { }
+            syncPlayPauseIcon();
+        }
+
+        function syncPlayPauseIcon() {
+            const isPlaying = !audio.paused && !audio.ended;
+            btnPlayPause.innerHTML = isPlaying ? `<i class="fa-solid fa-pause"></i>` : `<i class="fa-solid fa-play"></i>`;
+        }
+
+        function fmtTime(sec) {
+            sec = Math.max(0, Math.floor(sec || 0));
+            const m = String(Math.floor(sec / 60)).padStart(2, "0");
+            const s = String(sec % 60).padStart(2, "0");
+            return `${m}:${s}`;
+        }
+
+        btnPlayPause.addEventListener("click", async () => {
+            if (!audio.src) return;
+            if (audio.paused) { try { await audio.play(); } catch { } }
+            else audio.pause();
+            syncPlayPauseIcon();
+        });
+
+        audio.addEventListener("play", syncPlayPauseIcon);
+        audio.addEventListener("pause", syncPlayPauseIcon);
+        audio.addEventListener("ended", syncPlayPauseIcon);
+
+        audio.addEventListener("loadedmetadata", () => {
+            timeDur.textContent = fmtTime(audio.duration);
+        });
+
+        audio.addEventListener("timeupdate", () => {
+            const dur = audio.duration || 0;
+            const cur = audio.currentTime || 0;
+            timeNow.textContent = fmtTime(cur);
+            timeDur.textContent = fmtTime(dur);
+
+            const pct = dur > 0 ? (cur / dur) * 100 : 0;
+            trackProgress.style.width = pct.toFixed(2) + "%";
+        });
+
+        btnShare.addEventListener("click", async () => {
+            if (!state.current?.url) return;
+
+            const shareData = {
+                title: state.current.title || "Audio",
+                text: `${state.current.creator || ""}${state.current.subject ? " · " + state.current.subject : ""}`.trim(),
+                url: state.current.url
+            };
+
+            if (navigator.share) {
+                try { await navigator.share(shareData); } catch { }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(state.current.url);
+                    alert("تم نسخ الرابط للمشاركة.");
+                } catch {
+                    prompt("انسخ الرابط:", state.current.url);
+                }
+            }
+        });
+
+        btnFav.addEventListener("click", () => {
+            if (!state.current?.url) return;
+            toggleFav(state.current);
+        });
+
+        // ----------------------------
+        // Render results
+        // ----------------------------
+        function renderResults(docs) {
+            resultsList.innerHTML = "";
+
+            if (!docs.length) {
+                resultsList.innerHTML = `<div class="text-muted">لا توجد نتائج مطابقة.</div>`;
+                return;
+            }
+
+            for (const d of docs) {
+                const title = String(d.title || "بدون عنوان").trim();
+                const creator = normalizeCreator(d.creator);
+                const subject = normalizeSubject(d.subject);
+                const identifier = String(d.identifier || "").trim();
+
+                // تجاهل creator الفارغ/Null
+                if (!creator) continue;
+
+                const item = document.createElement("div");
+                item.className = "list-group-item list-group-item-action";
+
+                item.innerHTML = `
+          <div class="d-flex justify-content-between gap-2">
+            <div class="flex-grow-1">
+              <div class="fw-semibold truncate-2">${escapeHtml(title)}</div>
+              <div class="result-meta mt-1">
+                <span class="badge badge-soft me-1">الشيخ</span> ${escapeHtml(creator)}
+                ${subject ? `<span class="ms-2"><span class="badge badge-soft me-1">المادة</span> ${escapeHtml(subject)}</span>` : ""}
+              </div>
+              <div class="small text-muted mt-1">ID: ${escapeHtml(identifier)}</div>
+            </div>
+
+            <div class="d-flex flex-column gap-2">
+              <button class="btn btn-success btn-sm js-play">
+                <i class="fa-solid fa-play ms-1"></i> تشغيل
+              </button>
+              <button class="btn btn-outline-primary btn-sm js-playlist" data-bs-toggle="modal" data-bs-target="#playlistModal">
+                <i class="fa-solid fa-list ms-1"></i> القائمة
+              </button>
+            </div>
+          </div>
+        `;
+
+                item.querySelector(".js-play").addEventListener("click", async () => {
+                    await playFirstTrackFromItem({ identifier, title, creator, subject });
+                });
+
+                item.querySelector(".js-playlist").addEventListener("click", async () => {
+                    await openPlaylistModal({ identifier, title, creator, subject });
+                });
+
+                resultsList.appendChild(item);
+            }
+
+            if (!resultsList.children.length) {
+                resultsList.innerHTML = `<div class="text-muted">تم تجاهل النتائج لأن حقل "Creator" فارغ في كل العناصر.</div>`;
+            }
+        }
+
+        async function playFirstTrackFromItem(itemInfo) {
+            resultsList.querySelectorAll("button").forEach(b => b.disabled = true);
+            try {
+                const meta = await fetchMetadata(itemInfo.identifier);
+                const playable = pickAudioFiles(meta);
+                if (!playable.length) {
+                    alert("لا توجد ملفات صوتية قابلة للتشغيل داخل هذا العنصر.");
+                    return;
+                }
+                const f = playable[0];
+                await playUrl({
+                    identifier: itemInfo.identifier,
+                    title: f.title || itemInfo.title,
+                    creator: itemInfo.creator,
+                    subject: itemInfo.subject,
+                    url: f.url,
+                    fileName: f.name
+                });
+            } catch {
+                alert("حدث خطأ أثناء جلب بيانات العنصر.");
+            } finally {
+                resultsList.querySelectorAll("button").forEach(b => b.disabled = false);
+            }
+        }
+
+        async function openPlaylistModal(itemInfo) {
+            playlistFiles.innerHTML = `<div class="text-muted">جاري التحميل...</div>`;
+            plItemTitle.textContent = itemInfo.title || "—";
+            plItemCreator.textContent = itemInfo.creator || "—";
+
+            try {
+                const meta = await fetchMetadata(itemInfo.identifier);
+                const playable = pickAudioFiles(meta);
+
+                if (!playable.length) {
+                    playlistFiles.innerHTML = `<div class="text-muted">لا توجد ملفات صوتية.</div>`;
+                    return;
+                }
+
+                playlistFiles.innerHTML = "";
+                playable.forEach((f, idx) => {
+                    const track = {
+                        identifier: itemInfo.identifier,
+                        title: f.title || itemInfo.title,
+                        creator: itemInfo.creator,
+                        subject: itemInfo.subject,
+                        url: f.url,
+                        fileName: f.name
+                    };
+
+                    const row = document.createElement("div");
+                    row.className = "list-group-item d-flex justify-content-between align-items-center gap-2";
+                    row.innerHTML = `
+            <div class="flex-grow-1">
+              <div class="fw-semibold truncate-2">${escapeHtml(f.title || f.name)}</div>
+              <div class="small text-muted">#${idx + 1} · ${escapeHtml(f.name)}</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap justify-content-end">
+              <button class="btn btn-success btn-sm">
+                <i class="fa-solid fa-play ms-1"></i> تشغيل
+              </button>
+              <button class="btn btn-outline-danger btn-sm js-fav">
+                <i class="fa-regular fa-heart ms-1"></i> مفضلة
+              </button>
+              <a class="btn btn-outline-secondary btn-sm" href="${escapeHtml(f.url)}" target="_blank" rel="noopener">
+                <i class="fa-solid fa-download ms-1"></i> تحميل
+              </a>
+            </div>
+          `;
+
+                    row.querySelector("button.btn-success").addEventListener("click", async () => {
+                        await playUrl(track);
+                    });
+
+                    row.querySelector(".js-fav").addEventListener("click", () => {
+                        toggleFav(track);
+                    });
+
+                    playlistFiles.appendChild(row);
+                });
+
+            } catch {
+                playlistFiles.innerHTML = `<div class="text-danger">تعذر تحميل قائمة التشغيل.</div>`;
+            }
+        }
+
+        // ----------------------------
+        // Favorites-only filtering for results list
+        // ----------------------------
+        function applyFavoritesOnlyFilter(docs) {
+            if (!favoritesOnly.checked) return docs;
+            const favs = getFavs();
+            const favIds = new Set(favs.map(f => f.identifier).filter(Boolean));
+            // show only items whose identifier is in favorites (if user favorited tracks from that item)
+            return docs.filter(d => favIds.has(String(d.identifier || "")));
+        }
+
+        // ----------------------------
+        // Run search (with semantic filtering client-side too)
+        // ----------------------------
+        async function runSearch() {
+            const q = buildQuery();
+            state.lastQuery = q;
+
+            resultsList.innerHTML = `<div class="text-muted">جاري البحث...</div>`;
+            pagination.innerHTML = "";
+            statsText.textContent = "—";
+
+            loadingBar.classList.remove("d-none");
+            searchBtn.disabled = true;
+
+            try {
+                const sortArr = mapResultsSortToSolr(resultsSort.value);
+                const data = await advancedSearch(q, state.page, state.rows, sortArr);
+
+                const resp = data?.response;
+                const docs = Array.isArray(resp?.docs) ? resp.docs : [];
+                state.lastDocs = docs;
+                state.numFound = Number(resp?.numFound || 0);
+
+                const semantic = semanticInput.value.trim();
+
+                // Count ignored by creator empty (even if server tried to ensure creator exists)
+                const ignoredNoCreator = docs.filter(d => !normalizeCreator(d.creator)).length;
+
+                // شرطك + فلترة ذكية محليًا + خيار المفضلة فقط
+                let filtered = docs
+                    .filter(d => !!normalizeCreator(d.creator))
+                    .filter(d => {
+                        if (!semantic) return true;
+                        const c = normalizeCreator(d.creator);
+                        const t = String(d.title || "");
+                        return semanticMatch(c, semantic) || semanticMatch(t, semantic);
+                    });
+
+                filtered = applyFavoritesOnlyFilter(filtered);
+
+                setStats(state.numFound, filtered.length, ignoredNoCreator);
+                renderResults(filtered);
+                renderPagination();
+
+                // refresh autocomplete suggestions (titles from this page)
+                updateSemanticSuggestions();
+
+            } catch {
+                resultsList.innerHTML = `<div class="text-danger">حدث خطأ أثناء البحث. حاول لاحقًا.</div>`;
+            } finally {
+                loadingBar.classList.add("d-none");
+                searchBtn.disabled = false;
+            }
+        }
+
+        // ----------------------------
+        // Autocomplete for semantic input
+        // ----------------------------
+        function closeSemanticMenu() {
+            semanticMenu.classList.remove("show");
+            semanticMenu.innerHTML = "";
+        }
+
+        function openSemanticMenu(items) {
+            semanticMenu.innerHTML = "";
+            if (!items.length) return closeSemanticMenu();
+
+            items.forEach(it => {
+                const a = document.createElement("button");
+                a.type = "button";
+                a.className = "dropdown-item";
+                a.textContent = it;
+                a.addEventListener("click", () => {
+                    semanticInput.value = it;
+                    closeSemanticMenu();
+                    state.page = 1;
+                    runSearch();
+                });
+                semanticMenu.appendChild(a);
+            });
+
+            semanticMenu.classList.add("show");
+        }
+
+        function getCreatorsForSuggestions() {
+            return loadList(LS_CREATORS, defaultCreators);
+        }
+
+        function getTitlesForSuggestions() {
+            // take titles from last docs
+            const titles = (state.lastDocs || []).map(d => String(d.title || "").trim()).filter(Boolean);
+            // unique
+            return [...new Set(titles)].slice(0, 30);
+        }
+
+        function updateSemanticSuggestions() {
+            const q = semanticInput.value.trim();
+            if (q.length < 2) return closeSemanticMenu();
+
+            const creators = getCreatorsForSuggestions();
+            const titles = getTitlesForSuggestions();
+
+            const matches = [];
+
+            // creator suggestions (semantic match)
+            for (const c of creators) {
+                if (semanticMatch(c, q) || arNormalize(c).includes(arNormalize(q))) matches.push(c);
+                if (matches.length >= 6) break;
+            }
+
+            // title suggestions (simple contains)
+            if (matches.length < 10) {
+                for (const t of titles) {
+                    if (arNormalize(t).includes(arNormalize(q))) matches.push(t);
+                    if (matches.length >= 10) break;
+                }
+            }
+
+            // unique preserve order
+            const uniq = [];
+            const seen = new Set();
+            for (const m of matches) {
+                const k = arNormalize(m);
+                if (seen.has(k)) continue;
+                seen.add(k);
+                uniq.push(m);
+            }
+
+            openSemanticMenu(uniq.slice(0, 10));
+        }
+
+        semanticInput.addEventListener("input", () => {
+            updateSemanticSuggestions();
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!semanticInput.contains(e.target) && !semanticMenu.contains(e.target)) closeSemanticMenu();
+        });
+
+        semanticInput.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeSemanticMenu();
+        });
+
+        // ----------------------------
+        // Lists (CRUD)
+        // ----------------------------
+        function renderEditor(container, items, onEdit, onDelete) {
+            container.innerHTML = "";
+            if (!items.length) {
+                container.innerHTML = `<div class="text-muted small">القائمة فارغة.</div>`;
+                return;
+            }
+
+            items.forEach((it, idx) => {
+                const row = document.createElement("div");
+                row.className = "list-editor-item";
+                row.innerHTML = `
+          <div class="flex-grow-1 border rounded px-2 py-1 bg-light">${escapeHtml(it)}</div>
+          <button class="btn btn-outline-primary btn-sm" title="تعديل"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-outline-danger btn-sm" title="حذف"><i class="fa-solid fa-trash"></i></button>
+        `;
+                const [btnEdit, btnDel] = row.querySelectorAll("button");
+                btnEdit.addEventListener("click", () => onEdit(idx));
+                btnDel.addEventListener("click", () => onDelete(idx));
+                container.appendChild(row);
+            });
+        }
+
+        function initLists(resetSelectValues = true) {
+            const creators = loadList(LS_CREATORS, defaultCreators);
+            const subjects = loadList(LS_SUBJECTS, defaultSubjects);
+            saveList(LS_CREATORS, creators);
+            saveList(LS_SUBJECTS, subjects);
+
+            if (resetSelectValues) {
+                creatorSelect.value = "";
+                subjectSelect.value = "";
+            }
+
+            fillSelect(creatorSelect, creators, LS_CREATOR_SORT);
+            fillSelect(subjectSelect, subjects, LS_SUBJECT_SORT);
+            refreshSortHints();
+
+            // Editors
+            const creatorsEditor = document.getElementById("creatorsEditor");
+            const subjectsEditor = document.getElementById("subjectsEditor");
+
+            const rerenderAll = () => initLists(false);
+
+            renderEditor(creatorsEditor, creators,
+                (idx) => {
+                    const next = prompt("تعديل الاسم:", creators[idx]);
+                    if (next === null) return;
+                    creators[idx] = next.trim();
+                    saveList(LS_CREATORS, creators);
+                    rerenderAll();
+                },
+                (idx) => {
+                    if (!confirm("حذف هذا العنصر؟")) return;
+                    creators.splice(idx, 1);
+                    saveList(LS_CREATORS, creators);
+                    rerenderAll();
+                }
+            );
+
+            renderEditor(subjectsEditor, subjects,
+                (idx) => {
+                    const next = prompt("تعديل المادة:", subjects[idx]);
+                    if (next === null) return;
+                    subjects[idx] = next.trim();
+                    saveList(LS_SUBJECTS, subjects);
+                    rerenderAll();
+                },
+                (idx) => {
+                    if (!confirm("حذف هذا العنصر؟")) return;
+                    subjects.splice(idx, 1);
+                    saveList(LS_SUBJECTS, subjects);
+                    rerenderAll();
+                }
+            );
+
+            // Add buttons
+            document.getElementById("addCreatorBtn").onclick = () => {
+                const input = document.getElementById("newCreatorInput");
+                const val = input.value.trim();
+                if (!val) return;
+                if (!creators.includes(val)) creators.unshift(val);
+                saveList(LS_CREATORS, creators);
+                input.value = "";
+                rerenderAll();
+            };
+
+            document.getElementById("addSubjectBtn").onclick = () => {
+                const input = document.getElementById("newSubjectInput");
+                const val = input.value.trim();
+                if (!val) return;
+                if (!subjects.includes(val)) subjects.unshift(val);
+                saveList(LS_SUBJECTS, subjects);
+                input.value = "";
+                rerenderAll();
+            };
+        }
+
+        // ----------------------------
+        // Events
+        // ----------------------------
+        document.getElementById("searchForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            state.page = 1;
+            runSearch();
+        });
+
+        resultsSort.addEventListener("change", () => {
+            state.page = 1;
+            runSearch();
+        });
+
+        favoritesOnly.addEventListener("change", () => {
+            // re-run search to apply favorites filter on current page
+            runSearch();
+        });
+
+        // ----------------------------
+        // Init
+        // ----------------------------
+        adjustBodyPaddingForPlayer();
+        initLists(true);
+        setCurrentTrack(null);
+        renderFavorites();
+        runSearch();
+    </script>
+</body>
+
+</html>
